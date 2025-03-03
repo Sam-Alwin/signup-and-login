@@ -1,15 +1,13 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "../context/AuthContext";
+import useAuthStore from "../store/authStore"; 
 import { API_URL } from "../constant/api";
 import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, Box, Card, CardContent, Skeleton } from "@mui/material";
 
 const Home = () => {
-  const { userId, token, logout } = useAuth();
   const navigate = useNavigate();
-  
-  
+  const { userId, token, isAuthenticated, logout } = useAuthStore(); 
   const { setValue, watch } = useForm({
     defaultValues: {
       username: "",
@@ -17,14 +15,12 @@ const Home = () => {
       loading: true,
     },
   });
-
-  
   const username = watch("username");
   const fact = watch("fact");
   const loading = watch("loading");
 
   useEffect(() => {
-    if (!userId || !token) navigate("/");
+    if (!isAuthenticated) navigate("/login"); 
 
     const fetchUserData = async () => {
       try {
@@ -57,7 +53,7 @@ const Home = () => {
 
     fetchUserData();
     fetchRandomFact();
-  }, [userId, token, logout, navigate, setValue]);
+  }, [isAuthenticated, userId, token, logout, navigate, setValue]);
 
   return (
     <Container maxWidth="sm">
@@ -78,10 +74,22 @@ const Home = () => {
             )}
           </CardContent>
         </Card>
+
+        
+        <Button 
+          variant="contained" 
+          color="primary" 
+          sx={{ mt: 3, width: '100%' }}
+          onClick={() => navigate(isAuthenticated ? "/dashboard" : "/login")} 
+        >
+          Go to My Dashboard
+        </Button>
+
+        
         <Button 
           variant="contained" 
           color="secondary" 
-          sx={{ mt: 3 }}
+          sx={{ mt: 2, width: '100%' }}
           onClick={() => { logout(); navigate("/login"); }}
         >
           Logout

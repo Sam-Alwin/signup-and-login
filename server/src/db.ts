@@ -1,34 +1,43 @@
-import mysql from "mysql2";
+import { Sequelize } from "sequelize";
 import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
-const db = mysql.createConnection({
+const sequelize = new Sequelize({
+  dialect: 'mysql',
   host: process.env.HOST,
-  user: process.env.USER , 
+  username: process.env.USER,
   password: process.env.PASSWORD,
-  database: process.env.DB
+  database: process.env.DB,
+  logging: false, 
 });
 
+sequelize.sync({ alter: true }) 
+  .then(() => {
+    console.log("Database synchronized ");
+  })
+  .catch((err) => {
+    console.error("Sequelize Sync Error:", err);
+    process.exit(1);
+  });
 
 
-db.connect(err => {
-  if (err) {
+sequelize.authenticate()
+  .then(() => {
+    console.log("MySQL Connected via Sequelize!");
+  })
+  .catch((err) => {
     console.error("MySQL connection failed:", err);
     process.exit(1);
-  }
-  console.log("MySQL Connected!");
-});
-
-
-export const closeDB = () => {
-  db.end(err => {
-    if (err) {
-      console.error("Error closing database connection:", err);
-    } else {
-      console.log("Database connection closed.");
-    }
   });
+
+export const closeDB = async () => {
+  try {
+    await sequelize.close();
+    console.log("Database connection closed.");
+  } catch (err) {
+    console.error("Error closing database connection:", err);
+  }
 };
 
-export default db;
+export default sequelize;

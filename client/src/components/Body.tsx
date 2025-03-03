@@ -1,20 +1,24 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Button, Box, Container } from "@mui/material";
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import useAuthStore from "../store/authStore";
 
 export const Body = () => {
-  return (
-    <Container maxWidth="sm">
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Button variant="contained" color="primary" component={Link} to="/login">
-          Login
-        </Button>
-      </Box>
-    </Container>
-  );
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      
+      if (location.pathname === "/login") {
+        navigate("/dashboard", { replace: true }); 
+      } else {
+        navigate("/dashboard");
+      }
+    } else {
+      navigate("/login", { replace: true }); 
+    }
+  }, [navigate, location.pathname, isAuthenticated]);
+
+  return null; 
 };

@@ -1,12 +1,14 @@
-import React from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { API_URL } from "../constant/api";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../constant/api";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
+import useAuthStore from "../store/authStore"; 
 
 const Register = () => {
   const navigate = useNavigate();
-  
+  const { isAuthenticated } = useAuthStore(); 
+
   const {
     register,
     handleSubmit,
@@ -23,7 +25,13 @@ const Register = () => {
 
   const password = watch("password");
 
-  // regex:
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/home", { replace: true }); 
+    }
+  }, [isAuthenticated, navigate]);
+
+  
   const passwordValidationRules = {
     required: "Password is required",
     minLength: { value: 8, message: "Password must be at least 8 characters long" },

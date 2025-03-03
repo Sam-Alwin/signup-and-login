@@ -33,7 +33,7 @@ User.init(
     sequelize,
     modelName: "User",
     tableName: "users",
-    timestamps: false, // Disable createdAt and updatedAt columns
+    timestamps: false,
   }
 );
 
