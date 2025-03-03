@@ -16,7 +16,7 @@ const Login = () => {
   
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/home", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
     reset();
   }, [isAuthenticated, navigate, reset]);

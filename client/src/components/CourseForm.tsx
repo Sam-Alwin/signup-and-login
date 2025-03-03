@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { TextField, Button, MenuItem, Container, Box } from "@mui/material";
+import { TextField, Button, MenuItem, Container, Box, FormControl, InputLabel, Select, Typography, Rating, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import useCourseStore from "../store/courseStore";
 
 interface Course {
@@ -9,7 +10,7 @@ interface Course {
   platform: string;
   category: string;
   status: string;
-  rating: number; 
+  rating: number;
 }
 
 interface CourseFormProps {
@@ -25,7 +26,7 @@ const CourseForm = ({ onClose, onSave, course }: CourseFormProps) => {
       platform: "",
       category: "",
       status: "Not Started",
-      rating: 1, 
+      rating: 1,
     },
   });
 
@@ -51,7 +52,7 @@ const CourseForm = ({ onClose, onSave, course }: CourseFormProps) => {
     } else {
       addCourse(data);
     }
-    
+
     if (onSave) {
       onSave();
     }
@@ -62,6 +63,15 @@ const CourseForm = ({ onClose, onSave, course }: CourseFormProps) => {
 
   return (
     <Container>
+      
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Typography>Your course details</Typography>
+        <IconButton onClick={onClose} color="error"> 
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+    
       <form onSubmit={handleSubmit(onSubmit)}>
         <TextField
           fullWidth
@@ -87,41 +97,29 @@ const CourseForm = ({ onClose, onSave, course }: CourseFormProps) => {
           error={!!errors.category}
           helperText={errors.category?.message}
         />
-        
-        <TextField
-          select
-          fullWidth
-          label="Status"
-          {...register("status", { required: "Status is required" })}
-          margin="normal"
-        >
-          <MenuItem value="Not Started">Not Started</MenuItem>
-          <MenuItem value="In Progress">In Progress</MenuItem>
-          <MenuItem value="Completed">Completed</MenuItem>
-        </TextField>
 
         
-        <TextField
-          fullWidth
-          label="Rating (1 to 5)"
-          type="number"
-          {...register("rating", {
-            required: "Rating is required",
-            min: { value: 1, message: "Rating must be between 1 and 5" },
-            max: { value: 5, message: "Rating must be between 1 and 5" },
-            valueAsNumber: true,
-          })}
-          margin="normal"
-          error={!!errors.rating}
-          helperText={errors.rating?.message}
-          defaultValue={course?.rating ?? 1} 
-          onChange={(e) => {
-            const value = Number(e.target.value);
-            if (value < 1 || value > 5) {
-              setValue("rating", 1); 
-            }
-          }}
-        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel></InputLabel>
+          <Select
+            defaultValue={course?.status || "Not Started"} 
+            {...register("status", { required: "Status is required" })}
+          >
+            <MenuItem value="Not Started">Not Started</MenuItem>
+            <MenuItem value="In Progress">In Progress</MenuItem>
+            <MenuItem value="Completed">Completed</MenuItem>
+          </Select>
+        </FormControl>
+
+        {/* ⭐ Rating as Star Icons */}
+        <Box display="flex" alignItems="center" mt={2}>
+          <Typography variant="subtitle1" sx={{ mr: 2 }}>Rating:</Typography>
+          <Rating
+            defaultValue={course?.rating || 1}
+            onChange={(_, newValue) => setValue("rating", newValue || 1)}
+            size="large"
+          />
+        </Box>
 
         <Box mt={2} display="flex" justifyContent="center" gap={2}>
           <Button variant="contained" color="primary" type="submit">

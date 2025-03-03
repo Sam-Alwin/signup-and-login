@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Button, Container, TextField, MenuItem, Select, FormControl,
   Box, Snackbar, Alert, Typography, Grid, FormControlLabel,
-  RadioGroup, Radio, Switch, Paper
+  RadioGroup, Radio, Switch, Paper,Dialog, DialogTitle, 
+  DialogContent, DialogContentText, DialogActions
 } from "@mui/material";
 import useAuthStore from "../store/authStore";
 import useCourseStore from "../store/courseStore";
@@ -19,6 +20,7 @@ const Dashboard = () => {
 
   const [open, setOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -32,17 +34,33 @@ const Dashboard = () => {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
 
+  
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<number | null>(null);
+
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500); 
+  
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+  
+  
   useEffect(() => {
     fetchCourses({
-      search,
-      sort: sortBy as FetchCoursesParams["sort"], 
-      order: sortOrder as FetchCoursesParams["order"], 
+      search: debouncedSearch,
+      sort: sortBy as FetchCoursesParams["sort"],
+      order: sortOrder as FetchCoursesParams["order"],
       limit: resultsPerPage,
       page,
-      status: filterStatus || undefined, 
-      rating: onlyFavorites ? 5 : undefined, 
+      status: filterStatus || undefined,
+      rating: onlyFavorites ? 5 : undefined,
     });
-  }, [search, sortBy, sortOrder, resultsPerPage, page, filterStatus, onlyFavorites, fetchCourses]);
+  }, [debouncedSearch, sortBy, sortOrder, resultsPerPage, page, filterStatus, onlyFavorites, fetchCourses]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -60,6 +78,25 @@ const Dashboard = () => {
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
+  
+  // Open Confirmation Dialog Before Deleting
+  const confirmDeleteCourse = (id: number) => {
+    setCourseToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handle Confirm Deletion Used in Dialog
+  const handleDeleteConfirmed = () => {
+    if (courseToDelete !== null) {
+      deleteCourse(courseToDelete);
+      handleShowSnackbar("🗑️ Course deleted successfully!", "success");
+    }
+    setDeleteDialogOpen(false);
+    setCourseToDelete(null);
+  };
+
+
+
 
   return (
     <Container maxWidth="lg">
@@ -67,9 +104,20 @@ const Dashboard = () => {
       <Paper elevation={3} sx={{ p: 3, backgroundColor: "#f5f5f5", borderRadius: 2 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h4" fontWeight="bold" color="primary">📚 Course Dashboard</Typography>
-          <Button variant="contained" color="error" onClick={handleLogout}>
-            Logout
-          </Button>
+          <Box display="flex" gap={2}>
+            
+            <Button 
+              variant="contained" 
+              color="info" 
+              onClick={() => navigate("/home")}
+            >
+              Wanna Know a Fact?
+            </Button>
+            
+            <Button variant="contained" color="error" onClick={handleLogout}>
+              Logout
+            </Button>
+          </Box>
         </Box>
       </Paper>
 
@@ -186,10 +234,8 @@ const Dashboard = () => {
             setSelectedCourse(course);
             setOpen(true);
           }}
-          onDeleteCourse={(id) => {
-            deleteCourse(id);
-            handleShowSnackbar("🗑️ Course deleted successfully!", "success");
-          }}
+          onDeleteCourse={(id) => confirmDeleteCourse(id)} 
+
         />
       </Box>
 
@@ -214,6 +260,29 @@ const Dashboard = () => {
           onSave={() => handleShowSnackbar(selectedCourse ? "✅ Course updated successfully!" : "✅ Course added successfully!", "success")}
         />
       </Modal>
+
+       
+       <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this course? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="secondary">
+            No
+          </Button>
+          <Button onClick={handleDeleteConfirmed} color="error" autoFocus>
+            Yes, Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
 
       
       <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)}>

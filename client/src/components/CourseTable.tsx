@@ -7,7 +7,7 @@ import { Course } from "../store/courseStore";
 interface CourseTableProps {
   courses: Course[];
   onSelectCourse: (course: Course) => void;
-  onDeleteCourse: (id: number) => void;  // ✅ Added this line
+  onDeleteCourse: (id: number) => void; 
 }
 
 const CourseTable: React.FC<CourseTableProps> = ({ courses, onSelectCourse, onDeleteCourse }) => {
@@ -44,7 +44,7 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onSelectCourse, onDe
                   <IconButton onClick={() => onSelectCourse(course)}>
                     <Edit color="primary" />
                   </IconButton>
-                  <IconButton onClick={() => onDeleteCourse(course.id)}> {/* ✅ Call delete function */}
+                  <IconButton onClick={() => onDeleteCourse(course.id)}> 
                     <Delete color="error" />
                   </IconButton>
                 </TableCell>
