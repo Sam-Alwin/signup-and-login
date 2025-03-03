@@ -98,11 +98,11 @@ const CourseForm = ({ onClose, onSave, course }: CourseFormProps) => {
           helperText={errors.category?.message}
         />
 
-        {/* ✅ Status Dropdown (Shows Previous Value in Edit Mode) */}
+        
         <FormControl fullWidth margin="normal">
           <InputLabel></InputLabel>
           <Select
-            defaultValue={course?.status || "Not Started"} // ✅ Preserve selected value
+            defaultValue={course?.status || "Not Started"} 
             {...register("status", { required: "Status is required" })}
           >
             <MenuItem value="Not Started">Not Started</MenuItem>

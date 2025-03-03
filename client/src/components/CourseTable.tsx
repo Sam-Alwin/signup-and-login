@@ -44,7 +44,7 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onSelectCourse, onDe
                   <IconButton onClick={() => onSelectCourse(course)}>
                     <Edit color="primary" />
                   </IconButton>
-                  <IconButton onClick={() => onDeleteCourse(course.id)}> {/* ✅ Call delete function */}
+                  <IconButton onClick={() => onDeleteCourse(course.id)}> 
                     <Delete color="error" />
                   </IconButton>
                 </TableCell>
