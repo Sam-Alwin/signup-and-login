@@ -10,7 +10,6 @@ interface AuthRequest extends Request {
   user?: { id: number };
 }
 
-
 const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction): void => {
   authenticateJWT(req, res, () => {
     if (!req.user || !req.user.id) {
@@ -20,7 +19,6 @@ const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction): vo
     }
   });
 };
-
 
 router.post("/", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -48,12 +46,9 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response): Promis
   }
 });
 
-
 router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
-    
-    
     const search = String(req.query.search || "").trim();
     const sort = String(req.query.sort || "createdAt").trim();
     const order = String(req.query.order || "DESC").toUpperCase();
@@ -61,11 +56,8 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
     const page = Number(req.query.page) || 1;
     const offset = (page - 1) * limit;
 
-    
     const validSortFields = ["title", "platform", "category", "rating", "createdAt", "updatedAt"];
     const sortField = validSortFields.includes(sort) ? sort : "createdAt";
-
-    
     const sortOrder = order === "ASC" ? "ASC" : "DESC";
 
     const whereCondition: any = {
@@ -74,20 +66,17 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
       [Op.or]: [
         { title: { [Op.like]: `%${search}%` } },
         { platform: { [Op.like]: `%${search}%` } },
-        { category: { [Op.like]: `%${search}%` } }
-      ]
+        { category: { [Op.like]: `%${search}%` } },
+      ],
     };
-    
-    
+
     if (req.query.status) {
       whereCondition.status = req.query.status;
     }
-    
-  
+
     if (req.query.rating) {
       whereCondition.rating = Number(req.query.rating);
     }
-    
 
     const courses = await Course.findAndCountAll({
       where: whereCondition,
@@ -102,7 +91,6 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
     res.status(500).json({ message: "Server error", error });
   }
 });
-
 
 router.put("/:id", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -127,7 +115,6 @@ router.put("/:id", authMiddleware, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-
 router.delete("/:id", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -144,10 +131,36 @@ router.delete("/:id", authMiddleware, async (req: AuthRequest, res: Response): P
     }
 
     await course.update({ status: "Deleted" });
-
     res.json({ message: "Course marked as deleted" });
   } catch (error) {
     console.error("Error deleting course:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+router.post("/check-duplicate", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { title, platform, category } = req.body;
+    const userId = req.user!.id;
+
+    if (!title || !platform || !category) {
+      res.status(400).json({ message: "Title, platform, and category are required" });
+      return;
+    }
+
+    const existingCourse = await Course.findOne({
+      where: {
+        user_id: userId,
+        title: { [Op.iLike]: title.trim() },
+        platform: { [Op.iLike]: platform.trim() },
+        category: { [Op.iLike]: category.trim() },
+        status: { [Op.not]: "Deleted" },
+      },
+    });
+
+    res.json({ isDuplicate: !!existingCourse });
+  } catch (error) {
+    console.error("Error checking duplicate course:", error);
     res.status(500).json({ message: "Server error", error });
   }
 });

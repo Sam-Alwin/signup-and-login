@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import useAuthStore from "./store/authStore"; 
 import Login from "./components/Login";
 import Register from "./components/Register";
-import Home from "./components/Home";
+import Fact from "./components/Fact";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 import Dashboard from "./pages/Dashboard";
@@ -15,7 +15,7 @@ const App = () => {
     <Router>
       <Routes>
         
-        <Route path="/" element={isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
         
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -23,7 +23,7 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         
         <Route element={<ProtectedRoute />}>
-          <Route path="/home" element={<Home />} />
+          <Route path="/fact" element={<Fact />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
       </Routes>
